@@ -1,38 +1,14 @@
-########################################################################
-#
-# Copyright (c) 2022, STEREOLABS.
-#
-# All rights reserved.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-########################################################################
+import sys, os
 
-"""
-    This sample shows how to track the position of the ZED camera 
-    and displays it in a OpenGL window.
-"""
-
-import sys
-import ogl_viewer.tracking_viewer as gl
 import pyzed.sl as sl
 
+import ogl_viewer.tracking_viewer as gl
 
 if __name__ == "__main__":
 
     init_params = sl.InitParameters(camera_resolution=sl.RESOLUTION.HD720,
                                  coordinate_units=sl.UNIT.METER,
-                                 coordinate_system=sl.COORDINATE_SYSTEM.IMAGE)
+                                 coordinate_system=sl.COORDINATE_SYSTEM.IMAGE) # IMAGE
                                  
     # If applicable, use the SVO given as parameter
     # Otherwise use ZED live stream
@@ -48,6 +24,10 @@ if __name__ == "__main__":
         exit()
 
     tracking_params = sl.PositionalTrackingParameters()
+    area_file_path = "home.area"
+    if ( os.path.isfile(area_file_path)):
+        tracking_params.area_file_path = area_file_path
+
     zed.enable_positional_tracking(tracking_params)
 
     runtime = sl.RuntimeParameters()
@@ -76,5 +56,7 @@ if __name__ == "__main__":
             viewer.updateData(pose_data, text_translation, text_rotation, tracking_state)
 
     viewer.exit()
+    zed.disable_positional_tracking(area_file_path)
+
     zed.close()
 
