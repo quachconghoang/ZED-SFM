@@ -1,8 +1,12 @@
 import sys, os
+sys.path.append('./Positional_tracking')
 
 import pyzed.sl as sl
-
+import cv2 as cv
 import ogl_viewer.tracking_viewer as gl
+
+K_USE_AREA_FILE = True
+K_UPDATE_MAP = False
 
 if __name__ == "__main__":
 
@@ -24,8 +28,8 @@ if __name__ == "__main__":
         exit()
 
     tracking_params = sl.PositionalTrackingParameters()
-    area_file_path = "home.area"
-    if ( os.path.isfile(area_file_path)):
+    area_file_path = "./Data/fence.area"
+    if ( os.path.isfile(area_file_path) & K_USE_AREA_FILE):
         tracking_params.area_file_path = area_file_path
 
     zed.enable_positional_tracking(tracking_params)
@@ -44,8 +48,20 @@ if __name__ == "__main__":
     text_translation = ""
     text_rotation = ""
 
+    # Prepare new image size to retrieve half-resolution images
+    image = sl.Mat()
+    image_size = camera_info.camera_configuration.resolution
+    image_size.width = image_size.width /2
+    image_size.height = image_size.height /2
+
     while viewer.is_available():
+
         if zed.grab(runtime) == sl.ERROR_CODE.SUCCESS:
+            zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.CPU, image_size)
+            image_ocv = image.get_data()
+            cv.imshow("Image", image_ocv)
+            key = cv.waitKey(10)
+
             tracking_state = zed.get_position(camera_pose)
             if tracking_state == sl.POSITIONAL_TRACKING_STATE.OK:
                 rotation = camera_pose.get_rotation_vector()
@@ -56,7 +72,13 @@ if __name__ == "__main__":
             viewer.updateData(pose_data, text_translation, text_rotation, tracking_state)
 
     viewer.exit()
-    zed.disable_positional_tracking(area_file_path)
+    cv.destroyAllWindows()
+
+    if(K_USE_AREA_FILE & K_UPDATE_MAP):
+        print("Saving area file: {0}".format(area_file_path))
+        zed.disable_positional_tracking(area_file_path)
+    else:
+        zed.disable_positional_tracking()
 
     zed.close()
 
