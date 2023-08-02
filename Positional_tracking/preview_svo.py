@@ -4,6 +4,7 @@ sys.path.append('./Positional_tracking')
 import numpy as np
 import pyzed.sl as sl
 import cv2 as cv
+
 import open3d as o3d
 from util import print_camera_information, mat44_to_quaternion, exportTrackingFile, quats_to_matrices
 
@@ -21,7 +22,7 @@ save_path = "/home/hoangqc/Datasets/ZED/fence/"
 # exportTrackingFile(svo_path, area_path, save_path, output_file="pose_left_ENU.txt",ros=True)
 
 init_params = sl.InitParameters(camera_resolution=sl.RESOLUTION.HD720,
-                                depth_mode = sl.DEPTH_MODE.NEURAL,
+                                depth_mode = sl.DEPTH_MODE.ULTRA,
                                 coordinate_units=sl.UNIT.METER,
                                 coordinate_system=sl.COORDINATE_SYSTEM.IMAGE)
 init_params.set_from_svo_file(svo_path)
@@ -50,10 +51,11 @@ while zed.grab(runtime) == sl.ERROR_CODE.SUCCESS:
         zed.retrieve_image(depth_prev, sl.VIEW.DEPTH, sl.MEM.CPU, image_size)
         zed.retrieve_measure(depth, sl.MEASURE.DEPTH, sl.MEM.CPU, image_size)
 
-        filename = save_path + "image/" + str(count).zfill(6) + ".png"
+        filename = save_path + "image/" + str(count).zfill(6) + ".jpg"
+
         cv.imwrite(filename, image.get_data())
 
-        depth_fname = save_path + "depth/" + str(count).zfill(6) + ".npy"
+        depth_fname = save_path + "depth_ultra/" + str(count).zfill(6) + ".npy"
         np.save(depth_fname, depth.get_data())
 
         cv.imshow("Image", image.get_data())
