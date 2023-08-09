@@ -18,7 +18,8 @@ if __name__ == "__main__":
     # Otherwise use ZED live stream
     if len(sys.argv) == 2:
         filepath = sys.argv[1]
-        print("Using SVO file: {0}".format(filepath))
+
+        print("Using SVO file: {0} and map file".format(filepath))
         init_params.set_from_svo_file(filepath)
 
     zed = sl.Camera()
@@ -29,6 +30,10 @@ if __name__ == "__main__":
 
     tracking_params = sl.PositionalTrackingParameters()
     area_file_path = "./Data/fence.area"
+    if len(sys.argv) == 3:
+        area_file_path = sys.argv[2]
+        ...
+
     if ( os.path.isfile(area_file_path) & K_USE_AREA_FILE):
         tracking_params.area_file_path = area_file_path
 

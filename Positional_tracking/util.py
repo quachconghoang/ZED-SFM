@@ -41,16 +41,25 @@ def exportTrackingFile(svo_path, area_path, save_path, output_file="pose_left.tx
     zed.enable_positional_tracking(tracking_params)
 
     trajectory = []
+    trajectory_mat = []
+    last_xyz = np.zeros(3)
     while zed.grab(runtime) == sl.ERROR_CODE.SUCCESS:
         quad = mat44_to_quaternion(np.eye(4))
         tracking_state = zed.get_position(camera_pose)
         if tracking_state == sl.POSITIONAL_TRACKING_STATE.OK:
             quad = mat44_to_quaternion(camera_pose.pose_data().m)
+            last_xyz = quad[0:3]
+            trajectory_mat.append(camera_pose.pose_data().m)
+            # print(last_xyz)
         trajectory.append(quad)
 
     zed.disable_positional_tracking()
     zed.close()
-    np.savetxt(save_path + output_file, np.asarray(trajectory))
+
+    ate_error = str(np.linalg.norm(last_xyz)*100) + " cm"
+    print('ATE = ', np.linalg.norm(last_xyz))
+    np.savetxt(save_path + output_file, np.asarray(trajectory), header='tx ty tz qx qy qz qw ate='+ate_error)
+    return np.asarray(trajectory_mat)
 
 
 # transform matrix 44 to quaternion
